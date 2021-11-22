@@ -40,22 +40,23 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   @override
   void initState() {
     super.initState();
-     getData();
+    getData();
   }
 
   void getData() async {
     final prefs = await SharedPreferences.getInstance();
 
-    final value =  prefs.getString('key');
+    final value = prefs.getString('key');
 
-    if(value != null) {
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const FirstPage()));
+    if (value != null) {
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const FirstPage()));
     } else {
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const LoginScreen()));
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const LoginScreen()));
     }
   }
 
@@ -72,6 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
 final controller = TextEditingController();
 
 class LoginScreen extends StatefulWidget {
@@ -82,7 +84,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-
+  String get error => 'Enter value to login';
 
   @override
   Widget build(BuildContext context) {
@@ -98,11 +100,11 @@ class _LoginScreenState extends State<LoginScreen> {
             TextButton(
               onPressed: () {
                 saveLogin(context);
-                if(controller.text != null) {
-                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const FirstPage()));
-                }
-                else {
-                  return;
+                if (controller.text.isNotEmpty) {
+                  Navigator.of(context).pushReplacement(MaterialPageRoute(
+                      builder: (context) => const FirstPage()));
+                } else if (controller.text.isEmpty) {
+                  Navigator.defaultRouteName;
                 }
               },
               child: const Text("Login"),
@@ -117,10 +119,8 @@ class _LoginScreenState extends State<LoginScreen> {
 void saveLogin(BuildContext context) async {
   final prefs = await SharedPreferences.getInstance();
 
- await prefs.setString('key', controller.text);
-
+  await prefs.setString('key', controller.text);
 }
-
 
 class FirstPage extends StatelessWidget {
   const FirstPage({Key? key}) : super(key: key);
@@ -128,6 +128,23 @@ class FirstPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          IconButton(
+              onPressed: () async {
+                final prefs = await SharedPreferences.getInstance();
+
+                prefs.clear();
+
+                Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const LoginScreen()),
+                    (route) => false);
+              },
+              icon: const Icon(Icons.logout))
+        ],
+      ),
       body: ListView.separated(
         itemBuilder: (context, index) {
           return ListTile(
